@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SANDRO CALC</title>
+
+<!-- Metadati PWA per iPad -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="SANDRO CALC">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<!-- Manifest PWA -->
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#000000" />
+
+<style>
+:root {
+  /* Tema scuro professionale */
+  --bg-main: #000000;
+  --bg-panel: #1c1c1e;
+  --bg-display: #0a0a0a;
+  --bg-key: #2c2c2e;
+  --bg-key-secondary: #3a3a3c;
+  --bg-key-orange: #ff9500;
+  --bg-key-blue: #0a84ff;
+  --bg-key-gray: #4c4c4e;
+  --bg-key-dark: #1c1c1e;
+  
+  /* Testi */
+  --text-primary: #ffffff;
+  --text-secondary: #98989d;
+  --text-orange: #ffffff;
+  --text-blue: #ffffff;
+  --text-dark: #000000;
+  
+  /* Effetti */
+  --shadow-key: 0 4px 8px rgba(0,0,0,0.3);
+  --shadow-panel: 0 20px 60px rgba(0,0,0,0.8);
+  --border-key: 1px solid rgba(255,255,255,0.1);
+  
+  /* Font */
+  --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Courier New', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--bg-main);
+  font-family: var(--font-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+/* Container principale */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Layout orizzontale su desktop */
+@media (min-width: 1024px) {
+  .container {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 40px;
+  }
+}
+
+/* Header */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  padding-left: 5px;
+}
+
+.app-logo {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #0a84ff, #007aff);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 6px 20px rgba(10, 132, 255, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.app-logo::before {
+  content: "∑";
+  font-family: "Times New Roman", serif;
+  font-style: italic;
+  font-weight: bold;
+}
+
+.app-title {
+  font-size: 36px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #0a84ff, #ff9500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 10px rgba(10, 132, 255, 0.3);
+}
+
+.app-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+/* Sezione calcolatrice */
+.calculator-section {
+  flex: 2;
+  min-width: 0;
+}
+
+.calculator {
+  background: var(--bg-panel);
+  border-radius: 24px;
+  padding: 30px;
+  box-shadow: var(--shadow-panel);
+  border: 1px solid rgba(255,255,255,0.05);
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Display */
+.display-container {
+  background: var(--bg-display);
+  border-radius: 16px;
+  padding: 20px 25px;
+  margin-bottom: 25px;
+  border: 1px solid rgba(255,255,255,0.08);
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.display-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+#angleModeLabel {
+  background: rgba(10, 132, 255, 0.2);
+  padding: 4px 12px;
+  border-radius: 10px;
+  color: var(--text-blue);
+  font-weight: 600;
+  min-width: 60px;
+  text-align: center;
+}
+
+.display {
+  font-family: var(--font-mono);
+  font-size: 48px;
+  text-align: right;
+  min-height: 56px;
+  overflow: hidden;
+  word-break: break-all;
+  font-weight: 300;
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .display {
+    font-size: 56px;
+    min-height: 64px;
+  }
+}
+
+/* Layout CLASSICO: tastierino sinistra, operatori destra */
+.calculator-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .calculator-layout {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+}
+
+/* Tastierino numerico (SINISTRA) */
+.numeric-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+/* Tasti funzione scientifica sopra i numeri */
+.scientific-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* Pannello operatori (DESTRA) */
+.operators-panel {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .operators-panel {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Stile base tasti */
+.btn {
+  border: none;
+  border-radius: 16px;
+  height: 70px;
+  font-family: var(--font-main);
+  font-size: 22px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-key);
+  border: var(--border-key);
+}
+
+.btn:active {
+  transform: scale(0.95);
+  opacity: 0.9;
+}
+
+/* Tipi di tasti */
+.btn-number {
+  background: var(--bg-key);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.btn-operator {
+  background: var(--bg-key-orange);
+  color: var(--text-orange);
+  font-weight: 600;
+  font-size: 24px;
+}
+
+.btn-function {
+  background: var(--bg-key-secondary);
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.btn-clear {
+  background: var(--bg-key-gray);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.btn-blue {
+  background: var(--bg-key-blue);
+  color: var(--text-blue);
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.btn-equals {
+  background: var(--bg-key-orange);
+  color: var(--text-orange);
+  font-weight: 600;
+  font-size: 26px;
+}
+
+/* Tasti speciali */
+.btn-zero {
+  grid-column: span 2;
+}
+
+.btn-double {
+  grid-column: span 2;
+}
+
+/* Sezione cronologia */
+.history-section {
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .history-section {
+    margin: 0;
+    margin-left: 0;
+  }
+}
+
+.history-panel {
+  background: var(--bg-panel);
+  border-radius: 24px;
+  padding: 25px;
+  box-shadow: var(--shadow-panel);
+  border: 1px solid rgba(255,255,255,0.05);
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.history-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.clear-history-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clear-history-btn:active {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.history-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.history-item {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-expression {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+}
+
+.history-result {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+/* Bottone installazione */
+.install-button {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: linear-gradient(135deg, #0a84ff, #007aff);
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(10, 132, 255, 0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s;
+  border: 1px solid rgba(255,255,255,0.2);
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.install-button.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.install-button:active {
+  transform: scale(0.95);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* Utilità */
+.hidden {
+  display: none !important;
+}
+
+/* Responsive fixes */
+@media (max-width: 1023px) {
+  .container {
+    max-width: 800px;
+  }
+  
+  .calculator {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .container {
+    padding: 15px;
+    gap: 20px;
+  }
+  
+  .calculator {
+    padding: 20px;
+  }
+  
+  .app-logo {
+    width: 50px;
+    height: 50px;
+    font-size: 28px;
+  }
+  
+  .app-title {
+    font-size: 28px;
+  }
+  
+  .btn {
+    height: 60px;
+    font-size: 20px;
+  }
+  
+  .display {
+    font-size: 40px;
+  }
+  
+  .history-panel {
+    height: 500px;
+  }
+  
+  .calculator-layout {
+    gap: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+    gap: 15px;
+  }
+  
+  .calculator {
+    padding: 15px;
+  }
+  
+  .btn {
+    height: 55px;
+    font-size: 18px;
+  }
+  
+  .display-container {
+    padding: 15px 20px;
+    min-height: 120px;
+  }
+  
+  .display {
+    font-size: 36px;
+  }
+  
+  .numeric-pad,
+  .scientific-pad,
+  .operators-panel {
+    gap: 8px;
+  }
+  
+  .install-button {
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+  
+  .app-header {
+    margin-bottom: 15px;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <!-- Sezione sinistra: Calcolatrice -->
+  <div class="calculator-section">
+    <div class="app-header">
+      <div class="app-logo"></div>
+      <div>
+        <div class="app-title">SANDRO CALC</div>
+        <div class="app-subtitle">Scientific Calculator</div>
+      </div>
+    </div>
+    
+    <div class="calculator">
+      <!-- Display -->
+      <div class="display-container">
+        <div class="display-info">
+          <span id="angleModeLabel">DEG</span>
+          <span>Scientific Mode</span>
+        </div>
+        <div id="display" class="display">0</div>
+      </div>
+      
+      <!-- Layout CLASSICO: tastierino sinistra, operatori destra -->
+      <div class="calculator-layout">
+        <!-- COLONNA SINISTRA: Tastierino numerico e funzioni -->
+        <div class="left-panel">
+          <!-- Funzioni scientifiche (sopra i numeri) -->
+          <div class="scientific-pad">
+            <button class="btn btn-function" data-f="sin">sin</button>
+            <button class="btn btn-function" data-f="cos">cos</button>
+            <button class="btn btn-function" data-f="tan">tan</button>
+            <button class="btn btn-function" data-f="log">log</button>
+            <button class="btn btn-function" data-f="ln">ln</button>
+            <button class="btn btn-function" data-f="sqrt">√</button>
+            <button class="btn btn-function" data-f="pi">π</button>
+            <button class="btn btn-function" data-f="exp">eˣ</button>
+            <button class="btn btn-function" data-f="pow">xʸ</button>
+          </div>
+          
+          <!-- Tastierino numerico CLASSICO 3x4 -->
+          <div class="numeric-pad">
+            <!-- Riga 1 -->
+            <button class="btn btn-number" data-num="7">7</button>
+            <button class="btn btn-number" data-num="8">8</button>
+            <button class="btn btn-number" data-num="9">9</button>
+            
+            <!-- Riga 2 -->
+            <button class="btn btn-number" data-num="4">4</button>
+            <button class="btn btn-number" data-num="5">5</button>
+            <button class="btn btn-number" data-num="6">6</button>
+            
+            <!-- Riga 3 -->
+            <button class="btn btn-number" data-num="1">1</button>
+            <button class="btn btn-number" data-num="2">2</button>
+            <button class="btn btn-number" data-num="3">3</button>
+            
+            <!-- Riga 4 -->
+            <button class="btn btn-number btn-zero" data-num="0">0</button>
+            <button class="btn btn-number" data-num=".">.</button>
+            <button class="btn btn-function" data-f="rnd">RND</button>
+          </div>
+        </div>
+        
+        <!-- COLONNA DESTRA: Operatori e funzioni speciali -->
+        <div class="operators-panel">
+          <!-- Prima colonna operatori -->
+          <button class="btn btn-clear" data-action="clear">AC</button>
+          <button class="btn btn-function" data-action="sign">±</button>
+          
+          <button class="btn btn-function" data-action="percent">%</button>
+          <button class="btn btn-function" data-f="inv">1/x</button>
+          
+          <button class="btn btn-function" data-f="abs">|x|</button>
+          <button class="btn btn-function" data-f="fact">x!</button>
+          
+          <button class="btn btn-blue" data-f="rad">RAD</button>
+          <button class="btn btn-blue" data-f="deg">DEG</button>
+          
+          <!-- Operatori principali -->
+          <button class="btn btn-operator" data-op="÷">÷</button>
+          <button class="btn btn-operator" data-op="×">×</button>
+          
+          <button class="btn btn-operator" data-op="-">−</button>
+          <button class="btn btn-operator" data-op="+">+</button>
+          
+          <!-- Uguale grande -->
+          <button class="btn btn-equals btn-double" data-action="equals">=</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Sezione destra: Cronologia -->
+  <div class="history-section">
+    <div class="history-panel">
+      <div class="history-header">
+        <div class="history-title">Cronologia</div>
+        <button class="clear-history-btn" id="clearHistoryBtn">Pulisci</button>
+      </div>
+      <div id="historyList" class="history-list">
+        <!-- La cronologia verrà aggiunta dinamicamente -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottone installazione PWA -->
+<button id="installButton" class="install-button hidden">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="7 10 12 15 17 10"/>
+    <line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+  INSTALLA APP
+</button>
+
+<script>
+// Elementi DOM
+const display = document.getElementById("display");
+const historyList = document.getElementById("historyList");
+const angleModeLabel = document.getElementById("angleModeLabel");
+const installButton = document.getElementById("installButton");
+const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+
+// Variabili stato
+let current = "0";
+let previous = null;
+let operator = null;
+let justCalculated = false;
+let angleMode = "deg";
+let pendingPow = false;
+let deferredPrompt = null;
+
+// Inizializza display
+updateDisplay();
+
+function updateDisplay() {
+  display.textContent = formatDisplay(current);
+}
+
+function formatDisplay(value) {
+  if (value === "Error") return "Error";
+  
+  let num = parseFloat(value);
+  if (isNaN(num)) return "0";
+  
+  // Gestione numeri molto grandi/piccoli
+  if (Math.abs(num) >= 1e12 || (Math.abs(num) < 1e-6 && num !== 0)) {
+    return num.toExponential(6);
+  }
+  
+  // Formattazione normale con separatore migliaia
+  const formatter = new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 10,
+    useGrouping: true
+  });
+  
+  return formatter.format(num);
+}
+
+function addToHistory(exp, res) {
+  const item = document.createElement("div");
+  item.className = "history-item";
+  item.innerHTML = `
+    <div class="history-expression">${exp}</div>
+    <div class="history-result">${formatDisplay(res)}</div>
+  `;
+  historyList.prepend(item);
+  
+  // Limita a 30 elementi
+  const items = historyList.querySelectorAll('.history-item');
+  if (items.length > 30) {
+    items[items.length - 1].remove();
+  }
+  
+  // Scroll in alto
+  historyList.scrollTop = 0;
+}
+
+function handleNumber(num) {
+  if (justCalculated) {
+    current = num === "." ? "0." : num;
+    justCalculated = false;
+    updateDisplay();
+    return;
+  }
+  
+  // Limite caratteri
+  if (current.replace('.', '').length >= 15) return;
+  
+  if (num === ".") {
+    if (!current.includes(".")) {
+      current += ".";
+    }
+  } else {
+    current = current === "0" ? num : current + num;
+  }
+  
+  updateDisplay();
+}
+
+function setOperator(op) {
+  if (pendingPow) {
+    const base = parseFloat(previous);
+    const exp = parseFloat(current);
+    const result = Math.pow(base, exp);
+    addToHistory(`${formatDisplay(base)} ^ ${formatDisplay(exp)}`, result);
+    current = String(result);
+    previous = null;
+    operator = null;
+    pendingPow = false;
+    justCalculated = true;
+    updateDisplay();
+    return;
+  }
+
+  if (operator && !justCalculated) calculate(false);
+  previous = current;
+  operator = op;
+  current = "0";
+  justCalculated = false;
+}
+
+function calculate(addHistory = true) {
+  if (!previous || !operator) return;
+  
+  const a = parseFloat(previous);
+  const b = parseFloat(current);
+  let result = 0;
+  let expStr = `${formatDisplay(a)} ${operator} ${formatDisplay(b)}`;
+
+  switch (operator) {
+    case "+": result = a + b; break;
+    case "−":
+    case "-": result = a - b; break;
+    case "×": result = a * b; break;
+    case "÷": result = b === 0 ? "Error" : a / b; break;
+  }
+
+  if (result === "Error") {
+    current = "Error";
+    setTimeout(() => {
+      current = "0";
+      updateDisplay();
+    }, 1500);
+  } else {
+    current = String(result);
+  }
+  
+  if (addHistory && result !== "Error") addToHistory(expStr, result);
+  previous = null;
+  operator = null;
+  justCalculated = true;
+  updateDisplay();
+}
+
+// Funzioni scientifiche
+function toRadians(x) {
+  return angleMode === "deg" ? x * Math.PI / 180 : x;
+}
+
+function scientific(f) {
+  let x = parseFloat(current);
+  let result = x;
+  let expStr = "";
+
+  switch (f) {
+    case "sin": 
+      result = Math.sin(toRadians(x)); 
+      expStr = `sin(${formatDisplay(x)}${angleMode})`; 
+      break;
+    case "cos": 
+      result = Math.cos(toRadians(x)); 
+      expStr = `cos(${formatDisplay(x)}${angleMode})`; 
+      break;
+    case "tan": 
+      result = Math.tan(toRadians(x)); 
+      expStr = `tan(${formatDisplay(x)}${angleMode})`; 
+      break;
+    case "log": 
+      result = Math.log10(x); 
+      expStr = `log(${formatDisplay(x)})`; 
+      break;
+    case "ln": 
+      result = Math.log(x); 
+      expStr = `ln(${formatDisplay(x)})`; 
+      break;
+    case "sqrt": 
+      result = Math.sqrt(x); 
+      expStr = `√(${formatDisplay(x)})`; 
+      break;
+    case "pi": 
+      result = Math.PI; 
+      expStr = "π"; 
+      break;
+    case "exp": 
+      result = Math.exp(x); 
+      expStr = `e^${formatDisplay(x)}`; 
+      break;
+    case "pow":
+      previous = current;
+      pendingPow = true;
+      operator = null;
+      current = "0";
+      justCalculated = false;
+      display.textContent = formatDisplay(previous) + "^";
+      return;
+    case "inv": 
+      result = 1 / x; 
+      expStr = `1/(${formatDisplay(x)})`; 
+      break;
+    case "abs": 
+      result = Math.abs(x); 
+      expStr = `|${formatDisplay(x)}|`; 
+      break;
+    case "fact":
+      if (x < 0 || !Number.isInteger(x) || x > 170) {
+        result = "Error";
+      } else {
+        result = 1;
+        for (let i = 2; i <= x; i++) result *= i;
+      }
+      expStr = `${formatDisplay(x)}!`;
+      break;
+    case "rnd":
+      result = Math.random();
+      expStr = "Random()";
+      break;
+    case "rad":
+      angleMode = "rad";
+      angleModeLabel.textContent = "RAD";
+      angleModeLabel.style.background = "rgba(10, 132, 255, 0.3)";
+      return;
+    case "deg":
+      angleMode = "deg";
+      angleModeLabel.textContent = "DEG";
+      angleModeLabel.style.background = "rgba(10, 132, 255, 0.3)";
+      return;
+  }
+
+  if (result === "Error" || !isFinite(result)) {
+    current = "Error";
+    setTimeout(() => {
+      current = "0";
+      updateDisplay();
+    }, 1500);
+  } else {
+    current = String(result);
+  }
+  
+  if (result !== "Error" && isFinite(result)) {
+    addToHistory(expStr, result);
+  }
+  
+  justCalculated = true;
+  updateDisplay();
+}
+
+function clearAll() {
+  current = "0";
+  previous = null;
+  operator = null;
+  justCalculated = false;
+  pendingPow = false;
+  updateDisplay();
+}
+
+function toggleSign() {
+  if (current === "0" || current === "Error") return;
+  current = current.startsWith("-") ? current.slice(1) : "-" + current;
+  updateDisplay();
+}
+
+function percent() {
+  if (current === "0" || current === "Error") return;
+  current = String(parseFloat(current) / 100);
+  updateDisplay();
+}
+
+// Gestione click sui tasti
+document.querySelectorAll(".btn").forEach(btn => {
+  btn.addEventListener("click", function() {
+    // Effetto visivo
+    this.style.transform = "scale(0.95)";
+    this.style.opacity = "0.9";
+    setTimeout(() => {
+      this.style.transform = "";
+      this.style.opacity = "";
+    }, 150);
+    
+    const num = this.dataset.num;
+    const op = this.dataset.op;
+    const f = this.dataset.f;
+    const action = this.dataset.action;
+
+    if (num) handleNumber(num);
+    else if (op) setOperator(op);
+    else if (f) scientific(f);
+    else if (action === "clear") clearAll();
+    else if (action === "sign") toggleSign();
+    else if (action === "percent") percent();
+    else if (action === "equals") {
+      if (pendingPow) {
+        setOperator(null);
+      } else {
+        calculate(true);
+      }
+    }
+  });
+});
+
+// Pulisci cronologia
+clearHistoryBtn.addEventListener("click", () => {
+  historyList.innerHTML = "";
+});
+
+// Tasti tastiera
+document.addEventListener('keydown', (e) => {
+  const key = e.key;
+  
+  if (key >= '0' && key <= '9') {
+    handleNumber(key);
+  } else if (key === '.' || key === ',') {
+    handleNumber('.');
+  } else if (key === '+') {
+    setOperator('+');
+  } else if (key === '-') {
+    setOperator('−');
+  } else if (key === '*') {
+    setOperator('×');
+  } else if (key === '/') {
+    e.preventDefault();
+    setOperator('÷');
+  } else if (key === 'Enter' || key === '=') {
+    calculate(true);
+  } else if (key === 'Escape' || key === 'Delete') {
+    clearAll();
+  } else if (key === '%') {
+    percent();
+  } else if (key === 'p' || key === 'P') {
+    if (e.shiftKey) scientific('pi');
+  }
+});
+
+// PWA: Gestione installazione
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  
+  // Mostra bottone installazione dopo 2 secondi
+  setTimeout(() => {
+    installButton.classList.remove('hidden');
+    setTimeout(() => {
+      installButton.classList.add('visible');
+    }, 10);
+  }, 2000);
+});
+
+installButton.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  
+  if (outcome === 'accepted') {
+    installButton.classList.remove('visible');
+    setTimeout(() => {
+      installButton.classList.add('hidden');
+    }, 300);
+    showMessage('App installata con successo!');
+  }
+  
+  deferredPrompt = null;
+});
+
+window.addEventListener('appinstalled', () => {
+  installButton.classList.remove('visible');
+  setTimeout(() => {
+    installButton.classList.add('hidden');
+  }, 300);
+  deferredPrompt = null;
+});
+
+// Mostra messaggio temporaneo
+function showMessage(text) {
+  const message = document.createElement('div');
+  message.textContent = text;
+  message.style.cssText = `
+    position: fixed;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.9);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 500;
+    z-index: 1001;
+    animation: fadeInOut 3s ease-in-out;
+  `;
+  
+  // Stile animazione
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0; transform: translate(-50%, -20px); }
+      10%, 90% { opacity: 1; transform: translate(-50%, 0); }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  document.body.appendChild(message);
+  setTimeout(() => {
+    message.remove();
+    style.remove();
+  }, 3000);
+}
+
+// Service Worker
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js")
+      .catch(error => console.log("Service Worker error:", error));
+  });
+}
+
+// Aggiungi alcuni esempi alla cronologia
+setTimeout(() => {
+  if (historyList.children.length === 0) {
+    addToHistory("45 × 2", 90);
+    addToHistory("sin(30)", 0.5);
+    addToHistory("√(144)", 12);
+    addToHistory("π × 5", 15.707963);
+  }
+}, 1000);
+</script>
+</body>
+</html>

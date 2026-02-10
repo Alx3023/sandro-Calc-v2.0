@@ -1,0 +1,7 @@
+la-tua-cartella/
+├── index.html          (il file principale)
+├── manifest.webmanifest (configurazione PWA)
+├── sw.js              (service worker)
+└── icons/             (cartella opzionale per icone)
+    ├── icon-192.png
+    └── icon-512.png
